@@ -1,3 +1,5 @@
+#!/bin/bash
+
 mkdir data 
 
 vault server -config=config.hcl&
@@ -6,15 +8,9 @@ sleep 10
 
 export VAULT_ADDR='http://127.0.0.1:8200'
 
-initResult=$(vault operator init -recovery-shares=1 -recovery-threshold=1)
+vault operator init -recovery-shares=1 -recovery-threshold=1 > key.txt
 
-echo $initResult | jq > data.json 
-
-rootToken=$(echo -n $initResult | jq -r '.root_token')
-
-echo $rootToken > rootToken
-
-vault login rootToken
+vault login $(grep 'Initial Root Token:' key.txt | awk '{print $NF}')
 
 terraform init 
 
